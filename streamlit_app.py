@@ -12,7 +12,7 @@ st.write(
 api_key = render_api_key_input()
 model = st.sidebar.selectbox(
     "Model",
-    ["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"],
+    ["gpt-5.4-mini"],
     index=0,
 )
 
