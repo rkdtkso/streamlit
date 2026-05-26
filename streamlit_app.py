@@ -1,5 +1,34 @@
 import streamlit as st
-from utils import DEFAULT_MODEL, cached_simple_response, render_api_key_input
+from openai import OpenAI
+
+DEFAULT_MODEL = "gpt-4.1-mini"
+
+
+def render_api_key_input() -> str:
+    """API Key를 sidebar에서 입력받고 session_state에 저장합니다."""
+    if "openai_api_key" not in st.session_state:
+        st.session_state.openai_api_key = ""
+
+    st.sidebar.text_input(
+        "OpenAI API Key",
+        type="password",
+        key="openai_api_key",
+        placeholder="sk-...",
+        help="페이지를 이동해도 같은 세션에서는 값이 유지됩니다.",
+    )
+    return st.session_state.openai_api_key.strip()
+
+
+@st.cache_data(show_spinner="LLM 응답을 생성하는 중입니다...")
+def cached_simple_response(api_key: str, question: str, model: str = DEFAULT_MODEL) -> str:
+    """입력이 같으면 OpenAI API를 다시 호출하지 않고 캐시된 응답을 반환합니다."""
+    client = OpenAI(api_key=api_key)
+    response = client.responses.create(
+        model=model,
+        input=question,
+    )
+    return response.output_text
+
 
 st.set_page_config(page_title="Lab02 Streamlit LLM App", page_icon="🤖")
 
@@ -12,7 +41,7 @@ st.write(
 api_key = render_api_key_input()
 model = st.sidebar.selectbox(
     "Model",
-    ["gpt-5.4-mini"],
+    ["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"],
     index=0,
 )
 
@@ -45,5 +74,6 @@ st.markdown(
     "- `st.text_input(..., type='password')`로 API Key 입력\n"
     "- `st.session_state.openai_api_key`에 API Key 저장\n"
     "- `@st.cache_data`로 같은 입력의 LLM 응답 캐시\n"
-    "- `pages/` 폴더를 이용한 Chat, Chatbot, ChatPDF 멀티페이지 구성"
+    "- `pages/` 폴더를 이용한 Chat, Chatbot, ChatPDF 멀티페이지 구성\n"
+    "- `utils.py` 없이 각 페이지 파일 안에 필요한 함수를 포함"
 )
